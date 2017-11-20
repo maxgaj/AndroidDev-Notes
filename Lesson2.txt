@@ -1,0 +1,381 @@
+Lesson 2 - Create Project Sunshine
+
+1. Introduction
+	Android studio is a powerful development ally
+	teach how android works, android dev patterns and best practices
+	this isn't a copy paste code lab -> navigate online ressources, sample code and docs
+	assume progcd ramming background and proficient in Java
+	check android basics courses
+
+2. Are you ready?
+	assumes confortable working in Java
+	basic familiarity with WMH (or HTML), Github, networking and threading
+
+	What if you don't have prerequisites?
+		- Android Development for Beginners + other courses for beginners
+			* User Input
+			* Multi-screen apps
+			* Networking
+			* Data storage
+		- Android basics nanodegree program
+		- Java programming basics
+		- Git and Github
+
+3. Introducing Project Sunshine
+	Dan Galpin - Developer Advocate at Google
+	build a weather app called Sunshine
+	weather app is easy to conceptualize while touching more of the core APIs
+	be able to use those APIs and concepts to build own app for your final project
+
+	App description
+		Main screen
+			list of forecast information with emphasize presentation for today
+			icons indicates conditions
+		detailed view
+			on click on one of the forecast
+			contain the rest of weathery goodness
+			opportunity to share
+		settings
+			change units and location
+		system wide notifications
+			let us know about weather conditions without entering the app
+
+4. A Brief Introduction to Android Studio
+	strongly recomment using Android Studio as development environment
+	specifically made for creating Android Apps, actively supported and maintained by Google
+	contains Android emulator
+
+	A few more features which will be helpful on your journey
+		Jamal Eason - Product manager ont the Android Studio team
+		Android Studio is the official integrated development environment (IDE) for Andoid app development
+		based on powerful IntelliJ IDE platform
+
+			* IntelliJ IDEA - Java IDE developed by JetBrains
+
+		IDE = code editor and framework
+		features such as
+			code templates to help build common app features
+			rich layout editor with support for drag and dorp editing
+			Net Tools to catch performance, usability, version compatibility and other problems
+			support for both Java and C++
+			flexible Gradle-based build system with Instant Run for high speed coding iteration
+
+				* Gradle - build automation system
+
+5. Coding, GitHub and flow
+	Michael - Course developer
+	All courses code found are on GitHub
+	code divided into exercises
+	exercises divided into step
+	try to complete exercises independently
+	each exercises have a solution folder
+	start each programming exercise by moving to the next project folder
+	staying in sync with the course
+
+	The code for each exercise step contains TODO comments
+	Android Studio -> TODO tab at the bottom or press Shift twice and type in TODO
+	clicking to a TODO will get you directly to that code
+	TODO are ordered
+	follow ordering assure code will compile at each steps
+	GitHub code repository should be considered the truth.
+
+7. Creating our First Project
+	divide learning between building weather app and a series of toy apps designed to illustrate key android concepts
+
+	For distribution purposes on Google Play and elsewhere, the package name must be unique
+	In this class, we focus on building applications optimized around phones
+
+8. Android Min and Target Versions
+	Starter project created a whole bunch of project settings for us
+	find some of the more important ones under File > Project Structure > App > Flavors
+	Version code : number that describes the app version. Recognized both by the platform and Google Play
+		Assumption : you cannot safely downgrade to an older app version, but should be able to upgrade to a more recent version
+	Minimum SDK version: lowest SDK levle that your app can run on
+		Act like a filter: Google Play won't show your app on devices running an Android platform version lower
+	Target SDK version: which platform you've tested you app on. 
+		The platform uses the target SDK values in case a future release makes a significant change to expected behavior,
+		ensuring you app doesn't break when a user's phoe get upgraded
+		If you're developping a new app, there's really no reason to target anything but the latest Android version
+
+9. Stting Min and Target
+	relative percentage of active Android devices running a given platform version
+		https://developer.android.com/about/dashboards/index.html#Platform
+
+10. Running your code
+	AVD = Android Virtual Device
+	One of the important things to do is test your app on a wide variety of screen sizes ans platform versions
+
+11. Android Software Stack
+	Android is a full software stack based on Linux kernel
+		handles low level tasks like hardware, drivers and power management
+	on top of that: core C/C++ libraries (LibsC and SQLite) and Android Runtime + core Android Libraries
+	application framework: Your app runs within its own instance of the runtime, 
+		using classes and services provided in the application framework
+	Application layer : including your app and every other apps installed
+
+	When you hit Run, first thing is your code gets compiled into byte code
+	byte code is run in the Runtime on the device
+	Android Studio uses Gradel
+	Gradel is a build tool kit that manages dependencies and allows you to define custom build logic
+
+	Gradelbuild the project and then packages the bytes code along with your applications resources (images, UI, XML...) 
+	into an Android Application Package File (APK)
+	APK = formatted ZIP file
+	Android Studio signs the APK (Jar Signer) and pushes it to device
+	using Android Debug Bridge (ADB)
+
+	In the terminal, ADB let's you interact and debug apps on any device (physical or virtual)
+		pushing and pulling files
+		viewing logcat output
+		running a remote shell
+		...
+
+	Android Studio uses ADB to install the APK
+	then it uses again to send a start command via the remote shell
+	by identifying the package and class name of your main activity
+
+	you can see it in the "4: Run" tabs on android studio
+		adb push ... : pushing the APK
+		adb shell pm install ... : installing
+		adb shemm am start ... : starting
+
+	When you make a project, there are a few gradle build scripts generated for you
+		see it in the "1: Project" tab
+	When you click "Run", the build script will run if the project has changed
+	you can explicitly run the build scripts by pressin "Make project" (Hammer button)
+	observe log and build errors in "Gradle Console" tab
+	you can choose a specific Gradle task to run by clicking on the "Gradle" tab (up right)
+
+	use gradle in command line, from your ptoject folder
+		./gradlew tasks
+	check Udacity Gradle course : https://classroom.udacity.com/courses/ud867
+
+	read up on adb : https://developer.android.com/studio/command-line/adb.html
+	start your android app from command line
+		adb shell am start -n com.package.name/com.package.name.ActivityName
+
+12. Activity, Packages and Layouts
+	What is an Activity?
+	An Android Aplication is a collection of components that work with each other and with the Android framework
+	They are four types of components
+		- Activity
+		- Service
+		- Content Provider
+		- Broadcast Receiver
+	Android knows about each because they are registered in the Android Manifest
+
+	An activity is the Android component responsible for most app user interaction
+	developer guide definition:
+		single focused thing that the user can do
+	Activities are responsible for creating the window the your application uses to draw and receive events
+		such as touch events from system
+	user perspective: typical application looks like a series of linked activites
+	with one that is started from the launcher
+	The system maintains these activites on a stack to help preserve context for the users
+	exit activity using back button : system displays previous activity from the stack
+	return to launcher if stack is empty
+
+	How does the launcher fit in?
+	AndroidManifest.xml
+		tag for our application
+			tag activity
+				intent filter tag
+					tag mentioning the launcher
+	this is how your activity is registered with the launcher
+
+	The Android Framework has a large toolkit to help builf the user interface
+		visible part of the application the user interacts with
+	each activity provides a layout the provides the system with detailed information
+		what to display and how to display it
+		such as text views
+
+	res folder
+	That's where Android stores application resources
+	Separating resources makes it easy to update the way an application looks, feels and sounds
+	allowing you to optimize the application for different device configurations
+		screen sizes, languages...
+	whithout modifying the code
+	Important aspect of developing Android applications compatible on different types of devices
+	Images, string, styles and layout
+
+	Layout
+	Adnroid studio template has created activity_main.xml
+	Android stores all of its layout in XML
+	XML tags refer to types of view objects in the Android UI framework
+	some view objects can contain other view object (ex. ConstraintLayout)
+	their primary purpose is to arrange other views on the screen (ex. TextView)
+	it's why they are called layout or container views
+
+	MainActivity.java
+		OnCreate function
+			setContentView with R.layout.activity_main
+	That cause the XML layout resource to be inflated
+	converting everything in the XML file to a hierarchy of view objects in memory
+
+14. Android Layouts Primer
+	An activity is a single focused thing that the user can do. 
+	Activities are responsible for creating the window that your application uses to draw and receive events from the system. 
+	Activities are written in Java, extending from the Activity class.
+
+	An activity creates views to show the user information, and to let the user interact with the activity. 
+	Views are a class in the Android UI framework. 
+	They occupy a rectangular area on the screen and are responsible for drawing and handling events. 
+	An activity determines what views to create (and where to put them), by reading an XML layout file. 
+	These XML files are stored in the res folder inside the folder labeled layouts.
+
+	Type of view : UI Components
+		TextView : Creates text on the screen, generally non interactive text
+		EditView : creates a text input on the screen
+		ImageView : creates image on the screen
+		Button : creates button
+		Chronometer : simple timer
+	android.widget package contains a list of most
+	https://developer.android.com/reference/android/widget/package-summary.html
+
+	Type of view : Container view
+	The second are views called "Layout" or "Container" views. 
+	They extend from a class called ViewGroup. 
+	They are primarily responsible for containing a group of views and determining where they are on screen.
+	layout views can be nested in one another
+		LinearLayout: Displays views in a single column or row.
+		RelativeLayout: Displays views positioned relative to each other and this view.
+		FrameLayout: A ViewGroup meant to contain a single child view.
+		ScrollView: A FrameLayout that is designed to let the user scroll through the content in the view.
+		ConstraintLayout: This is a newer viewgroup; it positions views in a flexible way. We’ll be exploring constraint layout later in the lesson.
+
+	XML Attributes
+	Views have attributes in XML which control the properties of the view
+		textSize, padding...
+	Text
+		android:text="Your name appears here"
+	Width and Height
+		must be defined for every view
+		All view occupy a rectangular area on the screen
+		You can define this in pixels, or better yet dp
+			android:layout_width="200dp"
+			android:layout_height="300dp"
+		For the sake of having a layout be responsive and adjust to different devices, two common values are not numbers
+			android:layout_width="wrap_content"
+			android:layout_height="match_parent"
+		wrap_content
+			shrink the view to wrap whatever is displayed inside the view
+		match_parent
+			will expand the size of the view to be as large as the parent view which it is nested inside of
+	Padding and Margin
+		determine the space around a View
+		padding
+			determine space within the boundaries of the view
+		layout_margin
+			outside
+
+	How do the XML Layouts relate to the Java Activites?
+	This is done in the onCreate method of the Activity using the method setContentView. 
+	You pass a reference to the layout file as R.layout.name_of_layout.
+
+	The R Class
+	When your application is compiled the R class is generated. 
+	It creates constants that allow you to dynamically identify the various contents of the res folder, including layouts
+
+	setContentView
+	It inflates the layout.
+	Android reads your XML file and generates Java objects for each of the tags in your layout file. 
+	You can then edit these objects in the Java code by calling methods on the Java objects. 
+
+16. Exercise : Toying with FavoriteToys
+	How to get a reference to a TextView from the layout?
+		The textView is created when our layout is inflated
+		We need to go to the layout and give the textview an ID
+			an ID is a numeric identifier that Android uses to identify and locate the text view
+		android:id="@+id/tv_toy_names"
+			the android tool will come up with a number for us
+			we just need to assign it a descriptive name
+				@: tells the tools not to treat the stuff inside the quotes as a string literal
+					and look for the contents inside the Android resources
+				+: tells the tool to creat the id if it doesn't exist
+				id: lets the tools know that we are creating an id
+					rather than a reference to something like a style, string, image...
+	
+	Declare the textView
+		private TextView mToysListTextView;
+
+	Find the view
+		mToysListTextView = (TextView) findViewById(R.id.tv_toy_names);
+
+	use append() method to append text to a text view
+		for (String toyName : toyNames) {
+			mToysListTextView.append(toyName + "\n\n\n");
+		}
+
+18. Visual Layout Editor
+	Android Studio comes with a full featured visual layout editor
+	which is accessed through the design tab
+	widget = single purpose views
+		view that displayed text, images, add a text, buttons...
+
+	A ConstraintLayout is a special kind of layout that uses complex constraints on child views
+	to allow dynamic layouts that respect different windows sizes
+		magnet button : automatically creates constraints as we change things
+
+19. Handling Different Screen
+	Android framework provides excellent tools to help you with layouts
+	Using layout inference, we can make our layout more responsive
+	we can also create separate layouts for portarit and landscape, or larger screen devices
+
+20. Responsive Design
+	Buiding something that looks great in th visual layout is the easy part
+	You also need to consider different screens and orientations
+	The static approach is a bad idea
+	Your android UI needs to scale base on the screen it's running within
+	Absolute layout was deprecated in favor of layouts like
+		linear layout
+		constraint layout
+		grid layout
+	that can dynamically resize and adapt to any screen following the principles of Responsive Design
+
+21. Layout Manager
+	Today the lines between phones and tablets are disappearing
+	it's important to think about how your reliable scale in our multi-screen world
+	Build your layouts to be reasonably flexible for within a commin device size.
+	You can ste break points, providing alternative layouts for thos various sizes
+		- small phone
+		- large phone
+		- medium tablet
+		- large tablet
+	FrameLayout, LinearLayout and ConstraintLayout are three of the most common layouts
+	They all descent fir the view group class, designed to contained and give order to child view
+	You should always try to use the simplest layout that will get the job done
+
+	FrameLayout
+		great for simple layout when you only have one child view
+		if you had multiple items to it, they overlap
+		You can tell it to position other views relative to itself such as the upper right corner or lower lef corner
+
+	LinearLayout
+		perfect for stacking view vertically or horizontally one after another
+		powerful features to breakup the display proportionnaly
+
+	ConstraintLayout
+		powerful but more complicated
+		you can figure each view's position relatice to the parent (ConstraintLayout) or the sibling views
+		
+25. Solutions: Add Scrolling Weather
+	TextView.append()
+		Another method you can user is setText()
+		setText overwrites what was in the TextView, while appd simply add
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

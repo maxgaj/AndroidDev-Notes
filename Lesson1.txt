@@ -1,0 +1,20 @@
+Lesson 1 - Welcome!
+
+1. Welcome Video
+	Chaitra Ramanathan - Program Manager
+	Nick Blumenthal - Program Manager
+	Google Developer Challenge scholarship
+	+100.000 applications - From learners keen on building their skillsets and transforming their lives
+	passionate, motivated and resilient 
+
+	How it works
+	1st phase : 3 months to complete Udacity challenge course
+	acces to forum moderated by mentor to ask question and provide guidance
+	and slack channel: connect with peers, share progress, get feedback and ask question
+
+	chance to qualify for nanodegrees
+	base on progress and performance as weel as contribution to student community
+
+	cover all the concept, complete all exercices, help students by answering questions on forum and slack
+	look to one another for support
+	community is the best part: ask question answer question and engage

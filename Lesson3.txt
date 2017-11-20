@@ -1,0 +1,343 @@
+Lesson 3 - Connect to the Internet
+
+1. Introduction
+	we'll hook Sunshine up to the Cloud, replacing the mock data with data from our weather service
+	we'll learn about
+		Android Permission System
+		Network I/O
+		How to move time-consuming tasks off of the main UI thread
+	
+2. Logging
+	"6: Logcat" tab : log messages
+		Developers use log messages to communicate information about their app
+		they can be fairly trivial or indicate deeper problems like an error that crashes the application
+
+	When you're logging a message in your app you need to determine what log level it should be displayed at
+		ERROR : (Log.e)log obvious errors
+		WARN : (Log.w) things that don't make yout app ERROR or crash but remain a concern
+			example : a media might log that there is low disk space
+		INFO : (Log.i)purely informational messages (being connected to the internet...)
+		DEBUG : (Log.d) during dev,
+		VERBOSE: (Log.v) during dev, when you wnat to give very granular information
+		WTF: "What a Terrible Failure", more serious than ERROR. Errors that should never happen
+			On a DEBUG build of a device, a WTF error may force the device to halt and output a debug report
+
+	ERROR, WARN and INFO are always preserved in release versions
+		If you think only to capture thet later to diagnose a problem after your app is released to public, use them
+
+	signature
+		Log.x(String TAG, String message);
+			TAG can be any string you want but a common strategy is to use the class name as the tag
+				easier to search logs, all apps dump their log message into same bucket
+
+3. Internet Toy App Intro
+	simple app to search GitHub repositories by name
+		building query URLS
+		learning network basics
+	use logging it you have problems
+
+	URL stream that is using in out toy app
+		uses GitHub API and searches for repositories with a given name
+		sorts the results and see a certain page of the results
+		doesn't require any sort of API key authentification
+
+5. Resources
+	The res directory is where you should put iages, strings, layouts...
+	sub folder for types of resources
+		values : XML files that contains simple values such as strings ans integers
+		drawable : bunch of files like Bitmap and shapes
+		layout : XML layouts
+		animator : XML files for property animations
+		anim : XML files for tween animations
+		color : XML files that define state list colors
+		mipmap : Drawable files for launcher icons
+		menu : XML files that define application menus
+		raw : Resource file for arbitrary files saved in their raw form. For example, you could put audio files here.
+		xml : Arbitrary XML; if you have XML configuration files, this is a good place to put them
+	more info : https://developer.android.com/guide/topics/resources/providing-resources.html
+
+	Why Resources
+		Keeping resource files and values independent helps you easily maintain them if you need to update
+		The Android Framework also easily allows for alternative resources that support specific device configurations such as different languages or screen sizes
+
+	Using Resources in XMl and Java
+		That magical looking R.layout part of the expression above is actually a static class that is generated for us to reference resources in Java code
+
+	Working with strings.xml
+		In Java, you can get a String saved in res -> values -> strings.xml by calling the getString method
+			String myString = getString(R.string.today);
+		The String resource ID can be found in the strings.xml XML.
+			<string name="today">Today</string>
+		In XML, you can access a String by using the @string accessor method
+			<TextView text=”@string/today” />
+
+6. On Menus
+	Android is the concept of menus
+	We usually create them like any Android resource using XML
+		<menu ...>
+			<item ...
+				android:orderInCategory="1" />
+		</menu>
+
+	Android devices prior to Honeycomb have a menu button
+	in Honeycomb, we added a UX control we called an action bar
+	it sits at the top of the activity windows
+	it provides a place for an overflow menu
+
+	we allow applications to specify menu items as actions
+	if there's enough horizontal space, those actions appear on the action bar as buttons
+		<menu ...>
+			<item ...
+				app:showAsAction="ifRoom" />
+		</menu>
+		We are doing this in the app namespace because we're using AppCompat to make app compatible
+			with API level 10 Gingerbread devices
+		In Android API level 21 Lollipop, as part of our material design overhal,
+			we generalized this to a standard toolbar widget
+			allowing us to animate the toolbar in and use it in different places in out layout
+
+	To create our menu, we override onCreateOptionsMenu within our activity
+		@override
+		public boolean onCreateOptionsMenu(Menu menu){
+			getMenuInflater().inflate(R.menu.main,menu);
+			return true;
+		}
+	We can then handle menu item selections by overriding onOptionsSelected within our activity
+		@override
+		public boolean onOptionsItemSelected(MenuItem item){...}
+
+7. Exercise : Add a Menu
+	another nice android framework element: the Toast
+	A Toast is used to provide simple feedback about an operation in a small popup
+	only fills the amout of space required for the message, and current activity remains visible and interactive
+	Toasts automatically disappear afeter a certain timeout
+
+	Menu items are identified by integer IDs
+
+9. Fetching an HTTP Request
+	To make it easier, we created a helper method called getResponseFromHttpUrl(URL url)
+	you've already done a big chunck of the work by creating the URL object
+	In order ro get an http connection, we just call on open connection on URL
+		HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+		try {
+		...
+		} finally {
+			urlConnection.disconnect();
+		}
+	It doesn't actually talk to the network yet
+	It just creates the http URL connection object
+		we could set the request method, add header fields, change properties of the connection
+
+	We then get an input stream from the open connection
+		try{
+			InputStream in = urlConnection.getInputStream();
+			...
+		}
+
+	Next we have to read the contents of the input stream
+	There are many ways to do this, we've chose to use scanner because it's simple and relatively fast
+	scanner is used to tokenize Streams
+		Scanner scanner = new Scanner(in);
+		scanner.useDelimiter("\\A");
+
+	By setting the delimiter to \A, beginning of the Stream, we force the scanner to read the entire contents
+		of the stream into the next token stream
+	It's a bit of a sneaky trick, but it does a number of things automatically for us
+	It buffers the data
+		It not only pulls the datte from the network in small chunks,
+		but because http isn't required to give us a content size
+		our code needs to be ready to handle buffers of different sizes
+		This code automatically allocates and deallocates the buffers as needed
+	It also handles the character encoding for us
+		It translates from UTF-8 (default encoding for json and JavaScript) to UTF-16 (format used by android)
+
+	Other ways to do it
+		https://stackoverflow.com/questions/309424/read-convert-an-inputstream-to-a-string
+
+	There are some great libraries that both siplify networking while addinf functionality to the http stack
+		one of our favorites : Okhttp
+			http://square.github.io/okhttp/
+
+10. Permissions
+	When each APK is installer, it's given its own unique Linux user ID
+	and each app runs within its own instance of an Android Runtime
+		Each app is completely sandboxed
+		its files, processes and other ressources are inacessible to other apps
+	this sandbowxing approach is used to ensure that, by default, no app can access sensitive data
+	or perform actions that could adversely affect other apps, the OS or users
+		accessing the internet, getting the user's location, reading or modifying the contacts database...
+
+	Rather than asking the user each time an app tries to access something sensitive, 
+	you declare the permissions you require in your app's manifest
+		List of all the permissions your app may require:
+			https://developer.android.com/guide/topics/permissions/index.html
+
+	Why not to ask for all permissions and never worry about it again?
+		When  users install your app on older versions of Android,
+		they are greeted with a dialogue listing the permissions you've requested
+		many permissions are granted without the need for the permissions dialog
+		Certain sensitive informations must be acknowledged by the user when your application is running
+		The best practice is to request the absolute minimum number of permissions
+		Every time you need to request a new permission, consider if there are other alternatives that might achieve the same goal
+			In Android, you can launch the camera app and ask it to take a picture on your behalf
+			rather than having to access the camera directly
+
+13. Thread Basics
+	Android throws an exception when you try to access the network on the main thread
+	Android supports doing mutliple things at once.
+	Each android app can be divided into multiple threads of execution that can all run concurrently
+	These threads of execution can be scheduled by the OS to run on different CPU cores
+	But the system might choose to time slice the amount of single CPU, which means running each for a period of time
+	Either way, to your app it appears as if the threads are running concurrently
+
+	To make things easier on the developer, android apps have a single user interface thread
+	This thread is responsible for getting events from the various sensors and setting up the next frame to draw
+	To run at an ideal 60 frames per second, we need to make sure that all the computations between draw take less than 17ms
+	We want to do as little as possible on this main thread
+	but networking can take seconds
+	After five seconds of ignoring user input, Android will actually prompt the user to close your app
+	So to use network, we need to run the network task on a secondary execution thread.
+	But we need to make changes to the user interface,
+	Android provides a helpful framework pattern to do this : Async task
+
+14. AsyncTask
+	AsyncTask allows you to run a task on a background thread while publishing results to the UI thread
+	The UI thread has a message queue and a handler that allows you to send and process runnable objects and messages,
+		often from other threads
+	AsyncTask wraps this behavior with a reasonably straightforward interface
+
+	AsyncTask is a generic class
+	it takes parameterized types in its constructor
+	Each one of these generic parameters is to find as a Java variable argument with the three dots
+		which means that it is technically passes as an array in Java World
+
+	Three types used by AsyncTask:
+		Params
+			parameter type sent to the task upon execution
+		Progress
+			type published to update progress using the background computation
+		Result
+			type of the result of the background computation
+
+	These three parameters correspond to three primary functions you can override in AsyncTask
+		doInBackground
+		onProgressUpdate
+		onPostExecute
+	+	onPreExecute
+
+	In order to execute an AsyncTask, you call Execute with the parameters to be set to the background task
+	The AsyncTask then runs through several steps
+		First, it calls onPreExecute on the UI thread
+			You can initialize anything you might want to in the UI thread before the background tasks starts
+		Then it calls a doInBackground on another thread
+			Where your long running task will run
+			it's the only method that must be overriden to use the class
+			it's called with parameters you pass to the execute function
+		If you want to update some UI with the progress from your long-running task, 
+			you call publishProgress with the progress parameters
+			This causes onProgressUpdate to be called on the UI thread with your progress parameters
+			You can call publishProgress as many times as you'd like from doInBackground
+		Finally you return the result when your task running in doInBackground is complete
+			This causes the OnPostExecute function to get called on the UI thread with the result you returned
+	AsyncTask is a useful abstraction for threading and messaging between threads on Android
+	it's not right in every circumstance, but a good start to get coding in a multi-thread environemnt
+
+	JavaDoc on AsyncTask
+		(https://developer.android.com/reference/android/os/AsyncTask.html)
+
+19. JSON Format
+	How is Sunshine actually getting data from the Internet?
+	We're using the APi surface from OpenWeatherMap
+	In order to simplify things, we've created our own server that serves up fake data
+		you can either use a URL that delivers static data
+		or one that delivers random data
+	All the data are delivered in JSON format
+
+	JSON format
+		JSON stands for JavaScript Object Notation
+			it's the primary method for data exchange on the web
+			it's format is syntactically identical to the code for creating JavaScript objects
+			JavaScript programs can use JavaScript functions to read JSON data
+		We use it in many places because
+			like XML, it's human readable
+			more compact
+			easier to write
+			allows for the declaration of arrays
+
+	JSON is written as key value pairs
+		"Contacts": [{
+			"firstName": "John",
+			"lastName": "Doe",
+			"title": "Unknow Person"
+		}{
+			"firstName": "Al",
+			"lastName": "Coholic",
+			"title": "Barfly"
+		}]
+	One makes an array by adding a bracket to the declaration and defining the Objects inside
+
+	Our weather data is handled much the same way
+	It contains somme data to describe the selected location followed
+		by an array called list that contains a temp object and a weather object
+
+20. Quiz : JSON by hand
+	{
+		"Name": {
+			"firstName": "John",
+			"lastName": "Doe"
+		},
+		"title": "Missing Person"
+	}
+
+21. Quiz: Parse JSON
+	Initialize JSONObject from JSON string
+		JSONObject contact = new JSONObject(contactJSONString);
+	Name into a JSONObject
+		JSONObject name = contact.getJSONObject("name");
+	First and last names
+		String firstName = name.getString("firstName");
+		String lastName = name.getString("lastName");
+	Title
+		String title = contact.getString("title");
+
+25. Refresh Bad!!!
+	The refresh button is for debugging only
+	you should always seek to eliminate the refresh button or make it unnecessary
+	much like the save button
+	With the ability to run backgrounds task or send messages directly from your server to your app
+		there's no reason to force your users to hit refresh
+	That the app is up to date and synced with a cloud should be a given
+	also, it means it's not desirable to use async task and activity to do this
+		 because we are coupling what should be a background operation (fetching data from the internet)
+		 with a foreground component (the activity)
+	We'll cover storing data in databases and scheduling backgrouns tasks in future lessons
+
+26.Recap
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
