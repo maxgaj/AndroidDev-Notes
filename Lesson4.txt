@@ -1,0 +1,232 @@
+Lesson 4: RecyclerView
+
+1. Introduction
+	You're going to learn how to effectively display and interact with scrolling list of information
+		using a RecyclerView
+	RecyclerView and the design patterns behind it are things that you see and interact with many times a day
+	Instead of displaying all the weather data in a single text view, 
+		Sunshine will load weather data into individual views for each date
+		and respond to click on a view with a toast message
+
+2. Why RecyclerView?
+	We've been loading each daily forecast into a singel scrolling text view
+	it doesn't allow us to create the kind of formatting we need for the final version of Sunshine
+
+	In the finale version
+		The main user interface contains a list of mostly similar items
+		Rather than being a single text field
+			Each list item is made up of a series of views for each image and text block
+			allowing us to make a rich experience containing different font sizes and images
+
+	Our code has to create and lay out and populate all of the off screen views as well
+	Any images that are displayed have to be loaded into memory
+	This is reasonable for some small lists with minimal formatting, 
+	but for large list it becomes impractical
+		For each item in the list we would have to handle interactions such as assigning onClick handlers
+			All this set up times turns into delay that the user experiences before they are able to see anything
+		Since all of these items and any images they are displaying are in memory at once
+			it can cause the app to run out of memory.
+
+3. How RecyclerView Works
+	How does an application like Gmail which can literally have a list of millions of messages works?
+		it has to do with recycling and RecyclerView
+	Rather than creating the list items as we scroll, 
+		which would potentially cause glitches and performance problems
+	we keep some in a queue (or recycling bin) for reuse
+	When we are about to scroll, the recyclerView returns one of these previously created list items to you
+	your code then binds the list item view with new content
+	then it can be scrolled in
+	Views that are scrolled out are then placed back into the queue for reuse
+
+	This is a simplistic version of what actually happens
+	RecyclerView have to deal with fast flings, animations and lots of other conditions
+	but this is what's going on at a higl level
+
+4. Using RecyclerView
+	How do we use RecyclerView?
+		Almost every part of RecyclerView is completely modular
+		The RecyclerView has an Adapter that is used to provide the RecyclerView with new views when needed
+		This Adapter is also used to bind data from some Data Source to the views
+		The Adapter sends the views to a RecyclerView in an object called a ViewHolder
+		The ViewHolder contains a reference to the root view object for the item
+			You're expected to use it to cache the views object represented in the layout
+			to make it less costly to update the views with new data
+			This way, findViewVyId() gets called only for each data view only whenever that new item is created
+				and not each time you want to populate the views in the item with data
+		The Layout Manager tells the RecyclerView how to lay out all those views
+			vertically scrolling list, or horizontally scrolling lists, or staggered list, or grid...
+			You get awesome animations for item insertion and removal for free
+		Because it's based on a data source, it's esay for app using RecyclerView to allow for filtering a list of items
+	Android also has an older framework for displaying lists of data called ListView
+		outdated, thanks to RecyclerView, for these reasons and several others
+
+5. Why ViewHolders?
+	It's important that you use the view holder 
+		to cache the view objects that you're going to be populating with data or images
+	When the RecyclerView is first populated
+		you call findViewById for each view that will be showing data from the Adapter
+			This search can be expensive especially if you have a hierarchy of views in your list item
+		So it's best to do it once and cache those views in a view holder
+		this way, you can access those views later without having to look them up repeatedly
+	If you don't use a view holder
+		calling findViewByID() for each view can get out of hand pretty quickly
+
+7. Visualizing ViewHolders
+	Our Toy App for this lesson shows visually how items in our RecyclerView get recycled
+	We set a different background shade of green to each item as it's created
+	along with saving an integer ViewHolder instance 
+		so you can see the order in which each item was created
+	We use one of the views to show the index in the underlying data source
+
+	You'll see that recycling in practice is more complicated than our animation shows it to be
+	but ultimately it works in a similar way
+
+	There are a bunch of steps to get RecyclerView working at all
+		- Create the RecyclerView in the Layout
+		- Create the list item layout and ViewHolder
+		- Add the RecycleView Adapter
+		- Add the LayoutManager and connect everything together
+	
+	Rather than having you do all these steps all at once
+		we're going to give you an almost working bit of RecyclerView code each time
+		you'll fill out a single section in each exercise
+		This allows you to verify that each change taht you've made works correctly
+	The app should work exactly the same at the end of each exercise
+
+10. Items and ViewHolders
+	First step in adding a RecyclerView:
+		Adding the dependency and adding the RecyclerView to the layout
+	Netx step:
+		Craft the items that will be displayed in it
+		and create an object called a ViewHolder the we'll use to store references to that item
+	The list scrolls vertically so each item corresponds to a row of data
+	RecyclerView can be display these items in a horizontally scrolling list
+		that would make the item a column
+	Or in a grid
+	We'll use item when talking about the row layout
+
+	We've used SP and DP when we referred to dimensions in Android Layouts
+	These are both note actual sizes but are automatically scaled to be the same approximative physical size
+		regardless of the density of the pixels on the screen
+	The first Android phones were 160 dpi and 1 dp = 1 pixel on these devices
+	The conversion of dp units to screen pixels is simple
+		px = dp * (dpi/160)
+	Many modern devices have 480 dpi or more
+	SP work like DP but also scaled based upon user preferences
+		typically the text size preference
+	If you want your text to scale up with this preference
+		which is important for accessibility
+	make sure to use SP for fonts and widgets that have hard coded sizes that contains fonts
+
+12. RecyclerView and Adapters
+	We have our item layout and ViewHolder for our RecyclerView
+	It's time to connect the RecyclerView to a data source
+	For that, we need to create an Adapter
+
+	The Adapter is caller by the RecyclerView to create new items in the form of viewHolders
+		like the one we just created
+	It also populates, or binds, these items with data
+	and returns information about the data
+		such how many items there are in a given data source
+	This data could come form an ArrayList, the JSON result of a network request or any other data source you can model
+
+	The adapter requires us to override three functions
+		onCreateViewHolder
+			called when the RecyclerView instantiates a new ViewHolder instance
+		onBindViewHolder
+			called when RecyclerView wants to populate the view with data from our model
+		getItemCount
+			which returns the number of items in our data source
+
+	How are these three functions called?
+		We have an empty RecyclerView and out data source is an array of name objects
+		When the RecyclerView is being laid out and drown, 
+			it will first ask the adpater for the number of items that it will be displaying
+			It may ask multiple times during the layout process
+				it's important that this be a fast operation
+		The RecyclerView will then ask the Adapter to create ViewHolder objects
+		and, in the process, inflate individual item views from their corresponding XML
+		by calling onCreateViewHolder
+			It will create as many ViewHolders as are necessary
+				to either diplay all of the items
+				or fill and scroll the screen
+			Whichever option requires fewer ViewHolders
+			The onCreateViewHolder is responsible for creating the views
+				either by inflating the item views from XML
+				or creating them in code
+			it then returns a new viewHolder oject associated with this new view
+		After each ViewHolder is created, the RecyclerView will call onBindViewHolder
+		to populate each item with data
+			when you scroll, the RecycleView will reuse those ViewHolders
+			asking the adapter to bind new data to them
+
+14. Creating an Adapter
+	The onCreateViewHolder method will return a view holder object
+	public NumberViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType){
+		...
+		return viewHolder;
+	}
+
+	In here, we inflate our item view using a LayoutInflater
+	LayoutInflater is a bit of a new concept for you
+	its inflate method takes in the ID of a layout in XML
+	the it inflates or converts this into a collection of viewgroups and views thate represent it in Java code
+	The last parameter is set to flase, so that the inflated mayout isn't immediately attached to its parent view group
+	it returns a view
+		Context context = viewGroup.getContext();
+		int layoutIdForListItem = R.layout.number_list_item;
+		LayoutInflater inflater = LayoutInflater.from(context);
+		boolean shouldAttachToParentImmediately = false;
+
+		View view = inflater.inflate(layoutIdForListItem, viewGroup, shouldAttachToParentImmediately);
+		NumberViewHolder viewHolder = new NumberViewHolder(view);
+
+16. RecyclerView Layout Manager
+	The last required element that you have to implement to wire together a RecyclerView is the LayoutManager
+	Whereas a ViewHolder determines how an individual entry is displayed, 
+	the LayoutManager determines how the collection of items is displayed
+	LayoutManager is a key part of the way recycling works in RecyclerView
+		since it determines when to recycle items views that are no longer visible to the user
+
+	Android currently comes with three implementations of LayoutManager to fit most needs
+		LinearLayoutManager
+			Allows items to scroll either vertically or horizontally
+			Vertical scrolling is the default
+		GridLayoutManager
+			subclass of LinearLayoutManager
+			Arranges items in  grid that can also scroll vertically or horizontally
+		StaggeredGridLayoutManager
+			displays an offset grid of items
+			It is commonly used for applications that have views with content of varying dimensions
+	If none of those built-in LayoutManager satisfies your needs, 
+	you can directely extend from LayoutManager and create your own
+
+20. Responding to Item Clicks
+	One of the reasons that using a pattern like RecyclerView is useful
+		is that it makes it easy to handle clicks on items
+	RecyclerView doesn't include any type of click listeners
+	but it's pretty straight forward to implement
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
