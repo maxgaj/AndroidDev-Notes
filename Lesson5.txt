@@ -1,0 +1,160 @@
+Lesson 5 - Intents
+
+1. Introduction
+	You've learned quite a bit about building our first sunshine screen using RecyclerView
+	In this lesson you'll create the structure of your app 
+	and learn how to navigate between screens
+		which means learning a whole lot more about 
+			activities
+			the intent framework
+			how to use activities that come from other apps within your own
+
+2. Sunshine App UX Mocks
+	Sunshine doesn't show most of the fun information about the weather
+	The final version shows you detailed information about a day of weather
+		when you click on an item in the list
+	It will contain all sorts of great weather e-details
+		barometric pressure, wind speed, direction...
+	At the end of this lesson, Sunshine will ve telling Android how to move
+		between different activities in our app
+		and also to pass data between them
+
+3. Intents Framework
+	So far, all the features of the app have been contained in a sigle screen on a single activity
+	Splitting up information based on the action your users want to do
+		makes your app easy for you to code
+		and for your users to understand
+	When an item is clicked in the Sunshine app, the app ahows a new activity with the weather data
+
+	How do we start one activity from another?
+		Instead of having an activity call each other directly,
+		Android facilitates communication using messaging objects called intents
+		Intents let an app request that an action take place
+			starting a new activity, picking or displaying a photo from your phone gallery, making a phone call...
+	Why are we using intents rather than just passing in the class name directly?
+		Intents are a little more complicated than that
+		I like to think of them as envelopes
+		Each one includes which component you want to deliver to
+			and a small amout of data packaged as extras which are primitive topples
+		That can be read by the application component that ultimately receives and opens the intent
+		an explicit intent uses the name of the target component
+
+7. Creating an intent
+	Let's set up the link from our main activity to the newly created child activity
+	To move between two activities we call the method start activity
+		which takes an intent as a parameter
+	Why should we bother with an intent if we know exactly where we want to go?
+		Intents are like envelops and can package bits of information we want the new activity to have
+	If you look at the documentation for the Activity class
+		developer.android.com
+	you'll find many ways you can start an activity
+	We're most concerned with the signature that takes an intent
+		there are also variants allowing the called activity to return results back
+			a reference to a contact, a photo in a gallery...
+
+	We need to create an intent
+		like with the signatures of start activity, we have several choice of constructor
+		since we know the destination activity, we can use
+			Intent(Context packageContext, Class<?> cls)
+			takes a context and a class object as parameters
+	In Android application, activities can be started and stopped at any time
+	the context gives us a way of doing certain things that might effect an app as a whole
+		or might outlive the lifetime of a single activity
+	Every activity extend from context, 
+		so we can use MainActivity.this to retrieve a static reference to the context
+
+9. Passing Data between Activities
+	You shouldn't assume that every inten has extra data and always check if it does
+
+11. What are Implicit Intents?
+	Explicit intent: Where we know exactly what activity we want to start
+	What about the times when we don't know or don't care how our requests will be fulfilled?
+	Enter Implicit Intents
+		If we want to retrieve a contact or an image or call a number
+		implicit intents indicate an action to be done and an optional bit of data on which to execute it
+			picking a contact from the contacts content provider, dialing a number
+		Do we really need to know which application will fulfill the request?
+		If we try to specify the app, it may not even be available on your user's device
+		if it is installed, the user may have different preferences
+			They may want all their camera requests to go to Open Camera instead of the full camera app
+		If I only have one app on my phoen that can fulfill a particular intent request
+			it's automatically run
+		Otherwise, the Android OS will let me choose and indicate if I want all future requests
+			to be handled by the same app
+
+14. Understanding URIs
+	Uniform Resource Indentifier (URI) is a string of characters that identifies a resource
+	The formal name of a web address is a Uniform Resource Locator (URL)
+	A URL is a URI that identifies a web or network resource
+		A URI like geo can describe a physical location
+
+	Here's a full form of a URI, with all the optional parts shown in brackets
+		scheme:[//[user:password@]host[:port]][/]path[?query][#fragment]
+
+	it begins with a scheme
+		describes what type of resource we're pointing to
+			popular scheme on the web: HTTP, HTTPS, mailto, FTP, file, geo, ...
+	Depending on the particular scheme, it might be followed by two slashes and an authority part
+	The authority indicates 
+		an optional username and password to log in,
+		a host name, which could be a domain name or an IP address
+		and an optional port
+			for HTTP requests, unless otherwise stated, browsers assume port 80
+	After the authority part, there's a path to resource
+		if the authority exists, there must be a slash between the authority and the path
+		mailto is one of the schemes that doesn't require the authority part and can work with just the path
+			in this case, the person you want to email
+	The query is next
+		no required format other than begin with a question mark
+		it's common to use key value pairs to specify data, but it's not required
+		The query isn't always about searching
+		Officially, no size limit
+			in practice, it can range from 8000 to 190000 characters, depending the web browser
+			it might include the full text of an article
+	The last element of the URI is the fragment
+		preceded by a hash and indicates secondary data that the path resource will use
+		what the fragment does depends on the path, the browser and possibly the application that's being run
+
+18. Sharing is Caring!
+	When I click the Share Text Content button, 
+		a choose dialog appears from the bottom on the screen
+		showing all the apps on the device that are able to handle this type of intent
+	When you want to share data, there's a lot more you need to think about than if you're just starting a new activity
+	Depending on where you xant to send the data you have to think about
+		what type of data it is
+		the number of files
+		...
+	To save you from all those concerns, Android has a special helper class called ShareCompat
+	ShareCompat and its inner class IntentBuilder abstract away all of these decisions
+		so you can chain togather the bits taht you need and ignore those you don't
+
+19. Media Types
+	Every type of content that can be transmitted on the Internet has a two part indentifier that decribes it
+		that's called a media type
+		it's more archaic name is MIME type (Multipurpose Internet Mail Extension)
+	Initially defined for RFC 2046
+		allowed you to have multi-part emails with different types of attachments
+		Media types are a reason why someone can dens a single email with images, video, ...
+			and your email client knows exactly how to interpret eaach file
+	A media type string consists of a type, a subtype and optional parameters
+		top-level type name / subtype name [; parameters]
+			text/html; charset=UTF-8
+			text/plain text/rtf image/png video/mp4
+	Whenever you want to share data between apps, you'll have to specify it's media yype
+		so that Android can determine how and if it can fulfill the request
+
+
+
+
+
+		
+
+
+
+
+
+
+
+
+
+
