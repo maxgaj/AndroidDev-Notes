@@ -1,0 +1,184 @@
+Lesson 6: Lifecycle
+
+1. Introduction
+	In this lesson, we'll dive into just how Android framework deals with your activities
+	In particular, how the activity lifecycle may be different from what you're used to
+		from other plateforms and environments
+	We'll work with parts of the framework that helps you handle this lifecycle, such as loaders
+	If you leverage the framework properly, the users of your app never have to think about things like
+		activity and process lifecycles
+
+2. Why we need an Activity Lifecycle
+	If you tap on a list in the main activity, it opens up the detail activity
+		but the main activity remains on the back stack, ready to reappear as soon as you hit back
+	You can also launch the browser or the maps app, hit home, use recents key or use notifications
+	You can end up with a lot of apps on your back stack
+	Our ressources on devices are extremely limited
+		it's not a good idea to hav dozens of apps sitting idle in the background
+	Android solves this for us, so you don't have to use those awful task killer apps
+		It kills low priority applications that you haven't used in a while
+		It's important to realize that your app isn't in control of its own destiny
+		It can be killed at any time
+	You need to know how to deal with that
+		That means understanding the life cycle of an activity 
+		and the signals we get from the framework to indicate it's progress through the lifetime
+
+3. Android Activity lifecycle
+	A plateform which terminates apps on its own is a pretty radical departures for anyone who cut their teeth in desktop development
+		You start with the onCreate method, where you build and wire up your UI
+			Once that's done, your activity has been created
+		There are also methods when the activity becomes visible, onStart 
+		and another for when it gains focus and becomes active foreground app, onResume
+	The same sequence then happens in reverse
+		onPause indicates the activity has lost focus
+		followed by onStop when the app is no longer visible
+		Finally, there's an onDestroy method indicatinf the end of the app lifecycle
+	When your app is first launched, 
+		it quickly moves through these three states: create, start and resume one after the other
+	Within the full application lifetime, from when onCreate is first called, untill the app is terminated, 
+		it will move to htrough the active and visible lifecyle many times
+
+4. Reto on the Android Activity Lifecycle
+	The active lifecycle is when you activity is in the foreground and has focus
+		ACTIVE --onPause--> <--onResume-- VISIBLE
+		Here it's actively receiving input from user events and no other activities are obscuring it
+		onPause's call, and the active lifetime ends as soon as your activity is partially obscured
+		To make efficient use of limited resources, you'll want to use these signals
+			to adjust your app's resource burden
+		Most updates to your UI can be paused when this lifetime ends
+			which is annouced by onPause
+		But the app is still visible so you shouldn't pause any processes that are drawing your UI
+	The visible lifetime, on the other hand, continues whenever the app is at all visible 
+	and ends as soon as it's completely obscured by another app
+		VISIBLE --onStop--> <--onStart-- BACKGROUND
+		At this point, our app is moved to the background
+		so when you see onStop, you know the user can't see your app at all
+	While onCreate and onDestroy will be called at most once each time your app is run, 
+		these handlers are likely to be called many times while the app is running
+		this is where things get a little different
+	On almost all platforms, app lifecycles are deterministic
+		you'll start a program and it will keep running until either it completes or the user cancels it
+		At that point you can save state and free resources
+		On Android, lifecycles work a little differently
+
+6. Why does this happen?
+	Why did our activity get destroy and recreated?
+		It's possible to create different layouts and resources for different device configurations
+		Everything from screen size to pixel density and device orientation
+		keep in mind that somme of these values, such as device orientation and screen width, can change at runtime
+		So the default behavior is to destroy and recreate Android activities whenever a device configuration changes
+	When you rotate the device, you only see onCreate onStart and onResume show up in the text view
+	What about on Pause?
+		The content of text view that are populated dynamically, 
+		are not automatically preserved when the activity is destroyed and recreated
+	To do that, we can take advantage of the facility Android has to save and restore this information
+
+7.Save and restore Instance state
+	Let's make our text view logger more useful by persisting its state between activity tear downs
+		using onSaveInstanceState
+	It takes a bundle as its parameter
+		This bundle is a key value storage mechanism that we use to store the data we want to be saved
+		It can't quit store any data
+		Bundles need to be passed between processes or serialized to a file, so they support a limited set of types
+		You can add complex types to a bundle by having them implement the parcelable interface
+			The parcelable effectively contains the instruction for how to output an object to a stream of data
+			and then recreate the object form that stream
+
+10. App Termination
+	Try moving between applications
+	Android will kill background applications as needed and your app should be ready for this
+	The very last lifecycle method you will get in these cases is onStop
+		you won't ever get onDestroy
+	Our lifecyle app is tiny, so Android won't prioritize killing it off
+	it's only gonna do that if the device is under extreme memory pressure
+	Let's take a closer look at how you should prepare for an untimely app death
+
+11. Preparing for Termination
+	You probably noticed that from a user perspective, Android doesn't announce changes in app state
+		It doesn't announce that it's low on memory or ask user to close apps to free up resources
+	In fact, it does everything it can to make the resource limitation of the device invisible to the user
+		keeping the foreground app running smoothly and switching between app seamless
+		killing apps in the background
+			it does that if it needs their resources to make sure that the foreground apps can continue to run
+	A soon as your app isn't visible, its lifetime is perilous
+		That tells us some very important things about how our apps should behave
+		and provide a great user experience
+	From a system perspective, onPause and onStop are signals that our app may be killed imminently
+		so we need to clean up any resources that need an orderly tear down
+			such as closing an open connections or sockets
+
+12. Persisting Data with an Old Friend
+	Edit Text can be edited by users, they are preserved automatically vy the android framework
+		during a configuration change such as rotation
+	Regular TextViews are not
+
+14. AsyncTask and Loaders
+	What happens if the device is rotated while the network transaction is going on?
+	When we destroy and recreates an activity, the application continues to run
+		All the threads that were running continue to merrily process away
+		It delivers the result of the query to zombie activity that has gone away and the activity is left empty
+	Even worse in the current version of Sunshine
+		we create our AsyncTask in the onCreate method of our activity
+		It starts a thread which begins a background task
+		If we rotate the device or do something else whch causes the activity to be restarted
+			the new activity will create another AsyncTask to do the background operation
+			There will be extra network usage as both threads run in parallel 
+			and it will take a longer time for the user to see the result of the load
+			Even worse
+				because those background threads ultimately deliver their result to a callback that's part of the activity
+				those AsyncTask actually keep all of those old zombie activities around 
+				as long as the threads are running
+				causing extra memory pressure
+	Enter loaders to solve this problem
+		They've been a part of Android since Honeycomb and were added to the support library
+			so they are available on any useful Android release
+		Loaders provide a framework to perform asynchronous loading of data
+		They're registered by ID with a component called LoaderManager
+			which allows them to live beyond the lifecycle of the activity they're associated with
+			preventing duplicate loads from happening in parallel
+		If we want to load data on a background thread, 
+			we can use an implementation of a loader pattern called AsyncTaskLoader
+		AsyncTaskLoader implements the same functionality as AsyncTask, 
+			but because it's a loader, its lifecycle is different
+				OnCreate --> initLoader --> onCreateLoader --> loadInBackground
+		With an AsyncTaskLoader, once we rotate the device, 
+			the loader manager will make sure thate the running loader is connected to the AsyncTaskLoader equivalent of OnPostExecute
+				the onLoadFinished function
+					initLoader --> onLoadFinished
+			The loader thread keeps running in the loading backgroung function
+			and once it finishes, the activity gets notified through onLoadFinished
+
+16. Leveraging loaders
+	Creating loaders is actually pretty simple
+		We start off by creating an integer constant for a loader ID
+		Then we implement the loader call backs
+		Finally, we initialize the loader with the loaderManager
+
+18. Caching with Loaders
+	Loaders are tied to the application lifecycle
+	They automatically handle changes in configurations, such as rotation
+	They are designed to reload if the user navigates away from the activity and then returns
+	We can avoid the extra load if we don't find it desirable by caching and redelivering our existing result
+
+21. Conclusion
+	not only did we learn about the life cycle, we've learned best parctices for handling it using the moader pattern
+	Adhering to best lifecycle practices is very important
+		Not only is it necessary for system health
+		but it alson gives Android users the behavior they've come to expect from their applications
+	That makes everyone using your app more comfortable with how it behaves
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
