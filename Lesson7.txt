@@ -1,0 +1,225 @@
+Lesson 7 - Preferences
+
+1. Introduction
+	Your users might want a little more control and presonalization over what they see
+		Celius instead of Farenheit, ...
+	How do we offer this sort of customization?
+		As we mentioned when talking about rotating the app screen, 
+		the state of button and Edit Text doesn't always automatically get saved
+			Simply adding views that take input isn't enough
+			We need to think of how to save that input throughout the different life cycle changes
+			that the app might throw at us
+			including just shutting it down without any warning
+	in Addition, many apps will have specific screens for things like app setting and configuration
+	Luckily, Android provides us with the tools to both save data and easily create a settings screens for the app : Preferences
+
+2. Introducing the visualizer
+	We're gonna take a deep dive into an app called Visualizer Preferences
+	Visualize shows an audio visualization of a song, with circle square and triangle bumping to the different frequencies
+	We want a way to be able to fiddle around with the parameters of the visualization
+		color, size of the shapes, what shapes...
+	The code to do that is already written but there's no way to actually modify these parameters in the app's UI
+	You'll be making a settings screen for this application that will let any user modify the following attributes
+		whiwh shapes are shown
+		the color of the visualization
+		the sizes of the shapes
+
+3. Visualizer code
+	AudioVisuals folder
+		all the code for the audio playback and visualization of the audio
+		take a look but you won't actually need to modifu any of these classes in the lesson
+		The only interaction will be with VisualizerView
+			scroll down to the bottome
+				a bunch of setter methods that you will be working with
+	The classes that you will be directly modifying will all be outside of AudioVisuals
+		Only one right now : VisualizerActivity
+			activity that actually shoxs our visualization
+			during this lesson, you'll be creating a settings activity to go along with this visualization activity
+		Here's the code of visualizerActivity
+			defaultSetup()
+				calls the setter methods that we saw in VisualizerView
+			setupPermissions()
+				some code for permissions
+				you do not need to modify
+				setupPermission() is called in onCreate()
+				making sure that the suer has the correct audio permission before even trying to play the audio
+				Once the user has responded to the permission, onRequestPermission() will be called
+					if they accept, a new audio input reader object is created and the visualization starts
+					if not, the visualization exits with a helpful error message
+			I already have all the code to actually change the visualization
+				i do this by calling the methods on the VisualizerView just like in defaultSetup()
+					The color is currently a string which can be found in your string resource
+			There's nowhere in the UI that I can trigger those sorts of changes
+
+5. Data Persistence
+	Persisting data is the act of saving some data to the phone
+	There are five different ways to persiste data
+		Persisting data using saved instant state
+			allows you to save key-value pairs to store the state of one of your views
+			usually used to save the state during things like app rotation 
+				or if the system destroys the activity because of memory constraints
+			This is a temporary place to store the stat of an application
+				only be used if the user is still actively using the app
+				if the user pressed the back button to quit the app or restart entire phone
+					the data saved here is gone
+		If you need data to be available across app restarts and turning the phone off
+		you need to save the data to an actual file system
+		Android has three ways to do that
+			SharedPreferences clause
+				you specify a file and saves simple key value pairs to that file
+				the keys are always strings
+				the values are primitive like strings, string sets, booleans and various numerical types
+				After those key value pairs are saved to a file, all sorts of things can happen to the steady of the phone
+					but as long as it still works and your app hasn't been uninstalled
+					you can still get your information from that file
+				SharedPreferences is usually used for things like single text or numerical value about the user
+					if the app is a game, it might save the player's name in a sharedPreference
+					browser application, it might save the last web page and reopen it when the app relaunches
+			Sometimes, you'll have more complicated data than just simple key value pairs
+			you should consider using a database
+				for example, application that allow users to create and save book recommendations from friends
+					different from storing key-value pairs
+						you're going to be storing multiple book recommendations
+						the number of book will changes as the users add new ones
+						the book recommendations each have a lot of associated data
+							who recommended the book, name of the book, genre, etc.
+				Android provides full support for relational databases in the form of SQL lite databases
+				and it provides various framework components
+					content provides that help manage and share data in databases
+			At some point, you might want to create an app where users generate, download or need to store multimedia or large text
+			In these cases, Android offers the ability to save files 
+				using internal storage
+					which is just saving it to the phone's hard drive
+				and alson external storage
+					saving it to something like a memory card
+				Examples	
+					A podcats app might need to store audio files for the podcast to play offline
+					A camera app will need to store users' pictures
+					An app for your local library to store downloaded e-books
+		You might find yourself in a situation where you actually need to save data in a place accessed by multiple devices
+			examples
+				a leaderboard of scores for your game app
+				building a social networking app that allows users to log in from any phone
+			In these cases, you'll end up not storing data on your phone but in the cloud
+				setting up a database on a server or using a service like google's Firebase
+
+7. Preference Fragments
+	SharedPreferences were built with saving app preferences in mind
+		that's why they're called shared preferences
+		They work hand-in-hand with another part of the Android framework: PreferenceFragment
+			which was meant for creating a user interface for settings activities
+	What is a fragment in general?
+		class that represent a modular and reusable piece of an activity
+		for example,
+			sometimes in your app you might want the ability to split up portions of the activity UI into fragments
+				so that you can reuse those portions on different screens
+			instead of duplicating the code, you can put portion in a fragment and reuse the fragment
+	You'll usually have an activity taht can contain one or more subclasses of fragment, called PreferenceFragment
+		The preferenceFragment subclass is specially built for displaying preferences
+		it populates otself with preferences defined in XML
+		The XML is used to generate UI wodgets in the fragment
+		when the user changed values in the widgets, this updates key value paires in the sharedPreferences file
+	
+	To start, we're going to create a new activity called SettingsActivity
+		and we'll open it when you click on a menu item for the main visualizer activity
+	Second, we'll add a preferenceFragment to that settings activity
+		Along with the PreferenceFragment, we'll create an XML file that defines what preferences are in the fragment
+		we'll pick what the preferences names are, the keys that are used in the shared preference file and their default value
+	Third, we'll talk on what happens after your user sets the preference
+		you'll see how to load up preference from that file when your app first opens
+		and how you can be triggered whenever that preference actually changes
+	Finally, we'll spruce our PreferenceFragment with a UI component known as the preference summary
+		which shows the current state of the preference
+
+17. Preference change listener
+	To understand why the code is not updating, we can refer back to our life cycle diagram
+	In the Android life cycle, when you navigate away from an activity, onPause and onStop are called
+	When you come back, onStart and onResume are called
+	OnCreate is never called unless you rotate the activity or reopen the activity after beign closed
+	So one option for loading up our preferences would be to read preferences in the OnResume or OnStart call back
+	but there's a better way
+
+	The shared preferences object allows you to register an object that implements an OnSharedPreferenceChangeListener
+	This object gets called whenever a value in the shared preferences file changes
+	In this way, you can actually be triggered to update the UI if and only if a preference is actually changed
+
+	Setting this up will take four steps
+		First, we determine the activity that needs to get called when the preferences changed
+			Visualizer Activity is the one whose UI needs to change
+		Second we're going to need Visualizer Activity to implement on onSharedPreferenceChangeListener
+			this will then require that Visualizer Activity implement a method called OnSharedPreferenceChange
+			which will be triggered whenever a preference is changed
+		Third, you need to link the onSharedPreferenceChangeListener with the sharedPreferenceObject it should be listening to
+			You can do this using registerOnSharedPreferenceChangeListener
+		Fourth, you also need to unregister tje listener when the activity is shut down 
+			unregisterOnSharedPreferenceListener
+
+28. Edit Text Preference Constraints
+	To limit the acceptable values between 0 (non inclusive) and 3 (inclusive) we opted to use a PreferenceChangeListener - this is not the same as a SharedPreferenceChangeListener. The differences are:
+	    SharedPreferenceChangeListener is triggered after any value is saved to the SharedPreferences file.
+    	PreferenceChangeListener is triggered before a value is saved to the SharedPreferences file. Because of this, it can 	prevent an invalid update to a preference. PreferenceChangeListeners are also attached to a single preference.
+
+	Generally the flow goes like this:
+	    User updates a preference.
+    	PreferenceChangeListener triggered for that preference.
+    	The new value is saved to the SharedPreference file.
+    	onSharedPreferenceChanged listeners are triggered.
+	Otherwise they act very similarly. 
+	In your activity you implement the Preference.OnPreferenceChangeListener, override the 	onPreferenceChange(Preference preference, Object newValue). 
+	The onPreferenceChange method will return either true or false, depending on whether the preference should actually be saved.
+
+	Step 1: Implement the OnPreferenceChangeListener:
+		public class SettingsFragment extends PreferenceFragmentCompat implements OnSharedPreferenceChangeListener, Preference.OnPreferenceChangeListener
+
+	Step 2: Attach the listener to the size preference in onCreatePreferences
+		@Override
+		public void onCreatePreferences(Bundle bundle, String s) {
+		         /* Other preference setup code code */
+		        //...
+		        Preference preference = findPreference(getString(R.string.pref_size_key));
+		        preference.setOnPreferenceChangeListener(this);
+		}
+
+	Step 3: Implement onPreferenceChange
+		This code will first try to convert the preference into a number and then checks that the number is between 0 and 3. If either of these fail, a toast will be show and false is returned. By returning false, the incorrect value is not saved to shared preferences.
+			public boolean onPreferenceChange(Preference preference, Object newValue) {
+			   Toast error = Toast.makeText(getContext(), "Please select a number between 0.1 and 3", Toast.LENGTH_SHORT);
+
+			   String sizeKey = getString(R.string.pref_size_key);
+			   if (preference.getKey().equals(sizeKey)) {
+			       String stringSize = ((String) (newValue)).trim();
+			       if (stringSize == null) stringSize = "1";
+			       try {
+			           float size = Float.parseFloat(stringSize);
+			           if (size > 3 || size <= 0) {
+			               error.show();
+			               return false;
+			           }
+			       } catch (NumberFormatException nfe) {
+			           error.show();
+			           return false;
+			       }
+			   }
+			   return true;
+			}
+
+
+31. Should it be a settings
+	Before we jump straight in to making preferences for everything under the sun
+	I wanted to talk about something called choice paralysis
+	Giving the users a few key options is good, but overwhelm them with screens upon screens and they don't buy any jam
+	If you can't decide on a feature, resist the temptation just to make it a setting
+	it's esaier to add a setting than to remove a setting
+
+
+
+
+
+
+
+
+
+
+
+
+
