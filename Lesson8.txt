@@ -1,0 +1,49 @@
+Lesson 8 - Storing Data in SQLite
+
+1. Introduction
+	In the previous lesson, we've seen how to use share preferences to store some settings permanently
+	so that when you close the app, these settings are remembered again when the app relaunches
+	Databases are another form of permanent storage in Android.
+	They are often used to store more complex data
+	In this lesson, we'll see how to create and use SQLite databases in any Android project
+
+2. Why SQLite?
+	As you might expect, Android stores your persistent data in the files system.
+	These files can be stored in internal storage that is private to your app
+	They can also be stored and shared on external storage
+		On older Android devices, this shared storage was actually an external memory card
+		Today, most Android devices only emulate this card, 
+			so that there is the shared external storage apps need available on the device
+		Some Android devices have amulated shared storage and secondary external storage
+	Android 4.4 Kitkat added an API to allow developpers to access this secondary external storage
+	We're going to focus on internal storage in this class
+
+	Android stores your persistent data in the files system.
+	It does provide two functional layers on top of the file system in the form of SharedPreferences and SQLite
+		The SharedPreferences class provide the general framework that allows you to save and retreat persistent 
+			key-value pairs of primitive data types.
+			SharedPreferences is used byt the Android preference activity to store our settings data
+		An SQLite database or any relational database stores and organizes all its data in tables
+			each table is made up of rows and columns
+				each row being the data record or entry,
+				and the columns represent the data fields that make up those records
+			When you decide to use a database, you should think of how many tables you need to represent your data
+				and what each table will contain in terms of columns
+			Once you have a design for your database, you can create those tables
+				and upon those tables, you can create read update or delete data (CRUD)
+			Any operation in an SQL database is executed using SQL queries
+
+5. Creating the Contract
+	The contract is what both sides agree on before they move forward
+	It's important to define in the very beginning what your databse design would look like
+	The contract is a clause that defines the tables and the colons for each table that are included in the database
+
+6. Running Unit Tests
+	Unit tests are designed to verify that a small, individual part of the code, works as expected
+	To run all unit tests, in the exercise folder underneath the waitlist test directory
+		right-click on the COntractClassUnitTest and select Run 'ContractClassUnitTest'
+
+
+
+
+
