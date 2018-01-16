@@ -1,0 +1,86 @@
+Lesson 9 - Content Providers
+
+1. Introduction
+	In the Android Framework, there a four key app components:
+		- Activities
+		- Services
+		- Broadcast receivers
+		- Content providers
+	In this lesson we're focusing on content providers
+		How to use a preexisting content provider before building your own
+	What is exactly a content provider
+		When to use them, when not to, why you'd ever want to create your own
+		how to use a content provider to grab user data
+
+2. Content Providers
+	Sharing and accessing application data is great for developers
+	Using a content provider, your app can grab data, write data to a user's contacts, documents or calendar
+	Usually data sources like a SQLite database are privat to the app which created them
+	how do two different apps easily read and write for the same data source?
+	This is where content providers come in
+	In short, a content provider is a class that sits between an application and its data source
+	its job is to provide easily managed access to the underlying data source
+
+3. Content Provider Advantages
+	App developers create content providers for a few reasons
+		1. as an extra level of abstraction
+			They allow developers to change the underlying data source without needing to change any code in the applications
+			that access the content provider
+		2. some important android classes such as loaders and cursor adapters use content providers
+			if you want to use a loader, you need to make your data accessible through a content provider
+		3. The main reason is to open up the data source to other app developers
+			so that they can acces, use and modify your data source
+			if tou didn't use a content provider, this data would be limited to just your app
+			When other apps are using your content provider to access your data, they're doing it in a secure and managed way
+
+5. Exercise: Setup QuizExample
+	General Steps for Using a ContentProvider
+		You will take the following steps:
+		    Get permission to use the ContentProvider.
+   			Get the ContentResolver
+    		Pick one of four basic actions on the data: query, insert, update, delete
+    		Identify the data you are reading or manipulating to create a URI
+    		In the case of reading from the ContentProvider, display the information in the UI
+
+8. The content resolver
+	So there are five steps to adding content providers access to the app, you've done the first one
+	the next three steps are shown in these two line of codes
+		ContentResolver resolver = getContentResolver();
+		Cursor cursor = resolver.query(
+			DroidTermsExampleContract.CONTENT_URI, null, null, null, null);
+	This code accesses the correct content provider and grabs some data from it
+
+	The first new concept is the ContentResolver
+		What's the purpose of having this class sit between your app and direct access to the content provider?
+		They are multiple content providers on your phone
+		and you add more content providers when you dl apps that store local data, which use content providers
+		Managing what content providers are talking to what apps could turn into huge traffic jam
+	That's where the content resolver comes in
+		it acts as an intermediary between each app and the content providers it wants to access
+	Wherever you want to use a content provider, you'll need to do it through a ContentResolver
+
+9. Four basic operations
+	Next, we will use the content resolver to call the method query
+	This method is part of a set of four, mapping to the four CRUD methods mentioned earlier
+		- read from the data : query()
+		- add rows to the data: insert()
+		- update the data: update()
+		- delete rows from the data: delete()
+
+17. Calling the contentProvider
+	Where to put the code?
+		Database operations are one of this things that can take a pretty long time
+		In a similar way how you make network calls off the main thread
+		you should make your database operations calls off the main thread
+		to keep things simple, you'll be using an AsyncTask
+		the query method retunr the cursor object that stores all of the data
+
+
+
+
+
+
+
+
+
+
