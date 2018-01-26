@@ -1,0 +1,95 @@
+Lesson 10 - Building a Content Provider
+
+1. Introduction
+	In this lesson you'll build your own Content Provider
+	This will not only give you the ability to share data with other apps, 
+	but also because Content Providers are part of the Android framework, 
+	this will let you work with other framework classes to most efficiently load and display data
+
+4. Steps to create a Provider
+	Let's talk about how to access data through a provider
+	To build a custom content provider, 
+		the first step is to create a new provider class that extends
+		from the abstract content provider class that's part of the Android SDK
+		Adding to this class, you'll implement it's onCreate function
+		which is called to initialize the Task Content Provider
+	The second step is to register this new provider in the Android Manifest file
+	You'll also need to define URIs that identify the Task Content Provider 
+		and the different data types that it can return
+	You'll then update the task Contract Class to includes URIs and string constants
+		that will help you refer to the most commonly used URIs
+	The last step is to build a URIMatcher
+		This is a class that helps a content provider recognize and respond correctly to different type of URIs
+	Finally, in the Task Content Provider Class, you'll be implementing the required CRUD methods
+
+7. Define the URI Structure
+	Now that you've set up the content Provider, you'll need to tell the counter provider how to access the data
+	In general, URIs tell content Resolver two things
+		1. Which provider thay want to talk to
+		2. What specific data is being requested
+	All content URIs start with a base that includes a scheme, followed by an authority
+	After that is the pat, that indicates the specific data you're interesred in
+
+8. Wildcard characters
+	URI matcher only recognizes two wildcard characters: * and #
+	# stands for an integer of any length
+	* stands for a string of any length
+
+16. resolver to Database Flow
+	let's go through the detailed, end-to-end flow to how data moves from the tasj database to the to-do list user interface
+	let's say that your app is querying for data to display in the ui
+		First, from the UI code, the app will get a content resolver and call query on it
+			passing in the URI for the exact provider and data you want to read
+		The the resolver finds the correct task content provider
+			based on the authority of the passed in URI and passes on the query
+		The provider's query function will then use the URIMatcher you've built
+			to decide how to react to the passed in URI and determine what kind of data to retrieve
+		Based on the match, the query function will basically translate the URI
+			and other parameters into the correct SQL code for selected data
+		So, using the Matcher and the code for your query, the provider will then 
+			retrieve the desired data from the underlying database
+		Then the call travels all the way back to the Resolver in your UI code
+			and returns a cursor with that data
+	and this is how all calls from your UI to the database will function
+		passing through the provider to reach the database
+
+17. Overview of Provider Functions
+	You've gone through how an application accesses data through a provider.
+	And now you're ready to program the rest of the methods that the task content provider needs
+	There are six functions that every content provider is required to have
+		OnCreate
+			initializes the provider
+		CRUD methods
+			four main functions used for persistent data storage
+		getType
+			returns the MIME type of the content being returned
+			
+
+	To let users of your app create new data, 
+		you need to code the content provider's insert method
+		this will take in a content URI which tells the correct directory to insert data into
+		and a ContentValues object that contains the new data to insert
+	After the data is inserted, this return a newly created Content URI
+		that tells you the location of the inserted data
+	To read data and display it in your ui 
+		you'll write the query method whixh asks for data from your content provider
+		This return a cursor that contains a row, or rows, of data that the query has asked for
+	Update method
+		takes in the same parameters as insert,
+		so it knows where to update data by the URI, and whith what ContentValues
+		returns an integer value for the number of rows that were updated
+	delete method
+		needs to know the Uri that points to the row, or rows, to delete
+		return the number of rows deleted
+
+
+
+
+
+
+
+
+
+
+
+
