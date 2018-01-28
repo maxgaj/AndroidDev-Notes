@@ -1,0 +1,140 @@
+Lesson 11: Background tasks
+
+1. Introduction
+	It's time to connect it up to your application
+	We're going to use the content provider and database to store information
+	that the app collects when running in the background
+
+2. Running in the background
+	Now that we finished building out a home for our weather data,
+	it's time to consider how to make sure that data cab be updated in the background
+	One of the most powerful features of Android has always been the ability for 
+	any app to run in the background
+	If you're building an app that has significant background components
+	you need to be very conscious of how it's consuming resources
+	In this lesson, 
+		you'll learn more about how the Android Framework manages background apps
+		you'll be introduces to the final Android components, the service and broadcast receiver
+		and you'll be introduces to Jobs, the new ay Android is having background tasks
+		Running in the background wouldn't be complete whithout being able to notify
+		users when something important has happened
+		so you'll also learn how to send notifications when your app is running in the backgroung
+
+3. Hydratation Reminder
+	To learn more about running tasks in the background, notifications and scheduling jobs
+		you'll be working on a hydratation app
+	It works by sending you a reminder notification to drink water every 15 minutes when your phone is charging
+		When your phone is charging, you're more likely to be stationary, and 
+
+4. Services
+	We've spent quite a bit of time talking about the activity lifecycle
+		The Android component that is tied to the user interface of your application
+	But some tasks just don't fit nicely into the lifecycle of a single activity
+		It doesn't make sense to do network transactions that talk to a database
+		inside of an activity
+	That's where services come into play
+	Services are one of the four primary components as described in the Android manifest
+		including activities, content providers and broadcast receivers
+		all connected using intents
+	Services are meant for long running background tasks which don't need a visual component
+		Services do not provide a user interface
+	An activity can start a service, which will then continue to run even after the activity is shut down
+
+5. Services vs Loaders
+	When should I be using a service vs using a loader?
+		if the background task is loading information taht will only be used in the activity
+			it's a good candidate for a loader
+			(decoding an image, creating a database, some netwotk transactions)
+		If your app is inherently real time, you might want to just fetch data as you
+			need it in the UI rather than cache the data in a database
+		When should a service be used?
+			When the task that you are doing is decoupled from the user interface
+			an example would be updating a database in the background
+			While the user interface needs to know that this is happening, the operation
+			should continue, even if the application doesn't have an active window.
+		In short,
+			If you're loading or processing data that will be used in the UI, use a loader
+			If you need to process data in a way where the end result
+			will not directly affect the UI, use a service
+
+7. Starting services
+	Services hang out in the background, processing, downloading or uploading data
+	while the phone is locked or the user is using unrelated apps
+	How services are started in the first places?
+	There are three ways to start a service
+		You can mually start a service : Start
+		you can schedule a service : Schedule
+		or you can bind to a service: Bind
+	The most straightforward way to start a service is to call the startService method
+		from a context such as an activity
+		The service will execute, but will not usually communicate back to the component which started it
+		If you want to have a service execute at some point in the future,
+		or when some conditions are met, you can create a special type of service
+		called a JobService
+			You create your JobService, and then you define when the job should run
+			using a scheduler, like JobScheduler or Firebase JobDispatcher
+			They allow you to define complex run schedules for your service
+		Finally, a bindService offers a client server-like interface
+			With your service being the server and the various components
+			binding to the service being the clients
+		BindService can easily communicate back to the components 
+		Services can be both started and bound
+	We'll be using services in Sunshine in two ways
+		when the user changes theit location, new data needs to be immediately dl
+		weather data should be downloaded on a regular schedule in the background
+
+8. Running services in the background
+	All Android core components start on the main thread
+	To get around this, you'll need to create a background thread or AsyncTask from within your service
+
+9. Intent services
+	Unlike the service class we just talked about
+	IntentService is a service that actually runs in a separate background thread altogether
+	
+16. Pending Intents
+	We'd like to get our Hydration app to launch a notification every now and then
+		to remind us to drink our much needed glasses of water
+		We also wnt the notifications to launch the app when we click on it
+		so that we can click on the cup and update the count when we're done drinking
+		To get the notification to launch the app when clicked, 
+		we need to learn about PendingIntents
+	What if we want another application to luanch an activity in your own application?
+		Any notification in Android is displayed by a system service called NotificationManager
+		starts by the Android system itself
+		Since you can't modify the system's service permissions
+		pending Intents come to play
+	A PendingIntent is a wrapper around regular intent
+		thta is designed to be used by another application
+		The pending Intent gives that application the ability to perform
+		the included action as if ti was your application
+		with all the permissions your application has been granted
+	To create a PendingIntent instance, 
+		you can use one of those static methods in the pendingIntent class
+
+20. Foreground Services
+	It's worth mentioning a special type of service called a foreground service
+		one common example of a foreground service is a music player that's able to 
+		play music long after you've navigated away from the actual audio player activity
+	What is a foreground service
+		It is a service that the user is actively aware of because 
+		Android requires that service post a non-dismissible ongoing notification
+		They are typically used to show the user the real-time progress of a long-running operation
+		the user can do some rudimentary interactions with your service
+		Android will prioritize not shutting these services down if the system is memory constrained
+
+23. Scheduling jobs
+	In the old days of Android, there wasn't an easy way to schedule a periodic job
+	with complex run rules like 
+		every 15 minutes only on wifi and charging and if fails retry but wait more time between retrying
+	there's an easier and more battery-friendly way
+	in Android L, JobScheduler was introduced
+		it allows you to simply grab a reference to a job schedule or object from the contexte
+		create a new job with all the constraints you wanted
+		and then schedule the job whenever you want by calling js.schedule
+	In this course, we'll be using a class called FirebaseJobDispatcher
+		which is a more compatible version of JobScheduler
+	
+
+
+
+
