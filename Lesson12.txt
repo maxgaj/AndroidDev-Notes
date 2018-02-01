@@ -1,0 +1,37 @@
+Lesson 12 - Completing the UI
+
+1. Introduction
+	In almost all the previous lessons, you are focusing on building the functionality
+		while we provided you with pre-built UI screens
+		These next two lessons will switch our attention into turning a simple app that just works
+		into a professional-looking app that looks pretty user-friendly
+		You'll get to try different views, view group, organize them in alternative layouts and perform data binding
+		You will also get to design your app in a way that's accessible to people with visual and physical limitations
+		and those who speak other language
+		you'll get to build notifications in Android, as well
+		In the next lesson, we'll talk more about making our design even prettier
+		by using the right colors and font styles
+		as weel as creatinf touch selector
+
+4. Constraint Layout
+	Constraint Layout allows you to create a complex layout without having to nest view group inside each other
+	It's very similar to a relative layout in that other views are laid out relative to each other 
+		or to the parent layout itself
+	But the underlying structured of a constraint layout is much simpler
+	It usually outperforms other layout types
+
+14. Accessibility and Internationalization
+	If your goal is to make an app that goes fire on and get used by millions of users
+	you should think about accessibility and internationalization
+	Accessibility means your app can be utilized by users that have visual or physical limitation
+	that prevent them from fully seen or using a touch screen
+	Internationnaly friendly means that your app can be translated to other languages
+	without effecting the integrity and layout design
+	
+18. Responsive Design
+	A responsive UI i simply a UI that reacts to the amount of available space in the screen
+	we will talk a lot more about how to update our designs to match diferent screen sizes in the next lesson
+	But for now, let's at least look at what happens when you simply turn the phone into landscape mode
+	Android offers something called alternate layouts
+		Basically, you can create an entire new XML layout file only for landscape mode
+		
